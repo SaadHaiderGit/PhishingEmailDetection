@@ -99,7 +99,7 @@ def text_scoring(word_bank, text):
 
     if score > 0:
         return 1        #label as phishing email
-    return -1           #label as normal email
+    return 0            #label as normal email
 
 
 
@@ -124,8 +124,6 @@ def phishing_email_detection():
             continue
         
         dataset.append([lines[0], lines[3], lines[4], lines[5], lines[6]])      #sender, subject, body, label, urls
-        if dataset[-1][3] == 0:
-            dataset[-1][3] = -1
     
     instance_count = (len(dataset))
 
@@ -179,7 +177,7 @@ def phishing_email_detection():
                 correct_matches += 1
         acc = correct_matches / len(true_labels) * 100
         accuracy_list.append(acc)
-        print(f"Accuracy for fold {m}: {round(acc, 1)} %")
+        print(f"Accuracy for fold {m+1}: {round(acc, 1)} %")
     
 
     #Get average accuracy
@@ -187,7 +185,7 @@ def phishing_email_detection():
     for acc in accuracy_list:
         avg_acc += acc
     avg_acc /= FOLD_COUNT
-    print(f"Average accuracy: {sum(avg_acc, 1)} %")
+    print(f"Average accuracy: {round(avg_acc, 1)} %")
 
     return 0
 
