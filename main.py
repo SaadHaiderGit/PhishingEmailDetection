@@ -5,11 +5,19 @@ import krovetzstemmer
 import re
 import time
 import csv
+import nltk
+
+try:
+    from nltk.corpus import stopwords
+    stop_words = set(stopwords.words('english'))
+except LookupError:
+    nltk.download('stopwords')
+    from nltk.corpus import stopwords
+    stop_words = set(stopwords.words('english'))
 
 #global values
 csv.field_size_limit(500000)
 FOLD_COUNT = 10
-
 
 
 def clean(doc_text):
@@ -64,6 +72,8 @@ def word_counting(stemmer, word_bank, text, label):
     for token in text:
         if token == "" or token == " " or "Â" in token or (token.isascii() == False):
             continue
+        if token in stop_words:
+            continue
         token = stemmer.stem(token)
         if token not in word_bank:           #first global appearance; initialize
             word_bank[token] = {"positive": 0, "negative": 0}
@@ -89,7 +99,8 @@ def text_scoring(word_bank, text):
     for token in text:
         if token not in word_bank:           #unseen word; +0 score
             continue
-        
+        if token in stop_words:
+            continue
         pos_count = word_bank[token]["positive"]
         neg_count = word_bank[token]["negative"]
         local_multiplier = 1     
