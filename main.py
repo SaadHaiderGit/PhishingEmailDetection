@@ -85,9 +85,35 @@ def word_counting(stemmer, word_bank, text, label):
 
     return word_bank
 
+def score_sender(sender):
+    if not sender or sender.strip() == "":
+        return 0
 
+    sender = sender.lower()
+    score = 0
 
-def text_scoring(word_bank, text):
+    # Suspicious keywords
+    suspicious_keywords = ['support', 'admin', 'service', 'helpdesk', 'update', 'account', 'security']
+    for word in suspicious_keywords:
+        if word in sender:
+            score += 1
+
+    # Free or disposable email domains
+    suspicious_domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'aol.com', 'outlook.com']
+    if any(domain in sender for domain in suspicious_domains):
+        score += 1
+
+    # If the sender is using numeric gibberish (e.g., user12345@site.com)
+    if re.search(r"\d{4,}", sender):
+        score += 1
+
+    # Too many dots or symbols in the sender
+    score += sender.count('.') * 0.5
+    score += sender.count('-') * 0.5
+
+    return score
+
+def text_scoring(word_bank, text, sender=""):
     '''
     Reads text (subject line + email) filled with words, scoring it based on the word bank counts.
     Words found more often in normal emails will add negative values to the score.
@@ -107,6 +133,9 @@ def text_scoring(word_bank, text):
         if (neg_count > pos_count):
             local_multiplier = -1
         score += (local_multiplier * max(neg_count, pos_count)) / (neg_count + pos_count)
+
+    sender_score = score_sender(sender)
+    score += sender_score
 
     if score > 0:
         return 1        #label as phishing email
@@ -180,7 +209,7 @@ def phishing_email_detection():
         for data in folds[m]:
             true_labels.append(int(data[3]))
             text = clean(data[1] + " " + data[2]).split(" ")
-            pred_labels.append(text_scoring(word_bank, text))
+            pred_labels.append(text_scoring(word_bank, text, sender=data[0]))
 
         #fold accuracy
         for i in range(len(true_labels)):
