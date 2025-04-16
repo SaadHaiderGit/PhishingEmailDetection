@@ -85,6 +85,8 @@ def word_counting(stemmer, word_bank, text, label):
 
     return word_bank
 
+
+
 def score_sender(sender):
     if not sender or sender.strip() == "":
         return 0
@@ -112,6 +114,8 @@ def score_sender(sender):
     score += sender.count('-') * 0.5
 
     return score
+
+
 
 def text_scoring(word_bank, text, sender=""):
     '''
